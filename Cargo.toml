@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "abstract-betting-app"
 version = "0.0.1"
 authors = [
   "CyberHoward <cyberhoward@protonmail.com>",
@@ -50,7 +50,7 @@ abstract-interface = { version = "0.19.0", optional = true }
 cw-orch = { version = "0.16.4", optional = true }
 
 [dev-dependencies]
-app = { path = ".", features = ["interface"] }
+betting-app = { path = ".", package = "abstract-betting-app", features = ["interface"] }
 abstract-interface = { version = "0.19.0", features = ["daemon"] }
 abstract-testing = { version = "0.19.0" }
 abstract-sdk = { version = "0.19.0", features = ["test-utils"] }

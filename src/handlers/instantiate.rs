@@ -1,20 +1,30 @@
-use cosmwasm_std::{DepsMut, Env, MessageInfo, Response};
+use abstract_core::objects::fee::Fee;
+use abstract_sdk::features::AbstractNameService;
+use abstract_sdk::AbstractResponse;
+use cosmwasm_std::{Decimal, DepsMut, Env, MessageInfo, Response};
 
-use crate::contract::{App, AppResult};
-use crate::msg::AppInstantiateMsg;
-use crate::state::{Config, CONFIG};
+use crate::contract::{BetApp, BetResult};
+use crate::msg::BetInstantiateMsg;
+use crate::state::{Config, State, CONFIG, DEFAULT_RAKE_PERCENT, STATE};
+
+pub const INSTANTIATE_REPLY_ID: u64 = 1u64;
 
 pub fn instantiate_handler(
     deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
-    _app: App,
-    _msg: AppInstantiateMsg,
-) -> AppResult {
-    let config: Config = Config {};
+    app: BetApp,
+    msg: BetInstantiateMsg,
+) -> BetResult {
+    let state: State = State::default();
+    STATE.save(deps.storage, &state)?;
 
+    let config = Config {
+        rake: Fee::new(msg.rake.unwrap_or(Decimal::percent(DEFAULT_RAKE_PERCENT)))?,
+    };
+
+    config.validate(deps.as_ref())?;
     CONFIG.save(deps.storage, &config)?;
 
-    // Example instantiation that doesn't do anything
-    Ok(Response::new())
+    Ok(app.tag_response(Response::new(), "instantiate"))
 }

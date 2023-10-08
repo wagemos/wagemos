@@ -1,34 +1,27 @@
-use crate::msg::AppMigrateMsg;
-use crate::{
-    error::AppError,
-    handlers,
-    msg::{AppExecuteMsg, AppInstantiateMsg, AppQueryMsg},
-    replies::{self, INSTANTIATE_REPLY_ID},
-};
+use crate::error::BetError;
+use crate::handlers;
+use crate::msg::{BetExecuteMsg, BetInstantiateMsg, BetQueryMsg};
+use crate::BET_APP_ID;
 use abstract_app::AppContract;
-use cosmwasm_std::Response;
+use cosmwasm_std::{Empty, Response};
 
-/// The version of your app
-pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
-/// The id of the app
-pub const APP_ID: &str = "my-namespace:app";
+pub(crate) const DEFAULT_LP_TOKEN_NAME: &str = "ETF LP token";
+pub(crate) const DEFAULT_LP_TOKEN_SYMBOL: &str = "etfLP";
 
-/// The type of the result returned by your app's entry points.
-pub type AppResult<T = Response> = Result<T, AppError>;
+pub const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub type BetResult<T = Response> = Result<T, BetError>;
 
-/// The type of the app that is used to build your app and access the Abstract SDK features.
-pub type App = AppContract<AppError, AppInstantiateMsg, AppExecuteMsg, AppQueryMsg, AppMigrateMsg>;
+pub type BetApp =
+    AppContract<BetError, BetInstantiateMsg, BetExecuteMsg, BetQueryMsg, Empty, Empty>;
 
-const APP: App = App::new(APP_ID, APP_VERSION, None)
+const ETF_APP: BetApp = BetApp::new(BET_APP_ID, CONTRACT_VERSION, None)
     .with_instantiate(handlers::instantiate_handler)
     .with_execute(handlers::execute_handler)
-    .with_query(handlers::query_handler)
-    .with_migrate(handlers::migrate_handler)
-    .with_replies(&[(INSTANTIATE_REPLY_ID, replies::instantiate_reply)]);
+    .with_query(handlers::query_handler);
 
 // Export handlers
 #[cfg(feature = "export")]
-abstract_app::export_endpoints!(APP, App);
+abstract_app::export_endpoints!(ETF_APP, BetApp);
 
 #[cfg(feature = "interface")]
-abstract_app::cw_orch_interface!(APP, App, AppInterface);
+abstract_app::cw_orch_interface!(ETF_APP, BetApp, BetApp);
