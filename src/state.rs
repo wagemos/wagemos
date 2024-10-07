@@ -9,7 +9,7 @@ use abstract_core::objects::validation::{validate_description, validate_name};
 use abstract_core::objects::{AccountId, AnsAsset, AssetEntry};
 use abstract_core::AbstractResult;
 use abstract_sdk::features::AbstractNameService;
-use abstract_sdk::{AccountingInterface, Resolve};
+use abstract_sdk::{Resolve};
 use cosmwasm_std::{Addr, Decimal, Deps, DepsMut, Order, StdError, StdResult, Storage, Uint128};
 use cw_asset::{Asset, AssetInfo};
 use cw_storage_plus::{Item, Map, MultiIndex};

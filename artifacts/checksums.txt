@@ -1,1 +1,1 @@
-fd0a2c3713d9b714e278c5a10932960857fafcc560baf9661ea9eb8142ff90a8  app.wasm
+34f37dbf66b7ca00d49a6def56501e695fd3054c4ce39da433a940d83d6fef76  abstract_betting_app.wasm

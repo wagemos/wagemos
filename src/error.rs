@@ -3,6 +3,7 @@ use abstract_app::AppError;
 use abstract_core::objects::validation::ValidationError;
 use abstract_core::objects::AccountId;
 use abstract_core::AbstractError;
+use abstract_core::objects::ans_host::AnsHostError;
 use abstract_sdk::AbstractSdkError;
 use cosmwasm_std::{Addr, CheckedFromRatioError, OverflowError, StdError};
 use cw_asset::{AssetError, AssetInfo, AssetInfoBase};
@@ -25,6 +26,9 @@ pub enum BetError {
 
     #[error("{0}")]
     AbstractSdk(#[from] AbstractSdkError),
+
+    #[error("{0}")]
+    AnsHost(#[from] AnsHostError),
 
     #[error("{0}")]
     Asset(#[from] AssetError),

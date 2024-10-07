@@ -1,6 +1,8 @@
 use abstract_core::objects::{gov_type::GovernanceDetails, AccountId};
+use abstract_core::registry::{Account, ExecuteMsgFns};
 use abstract_interface::{Abstract, AbstractAccount, AppDeployer, VCExecFns};
-use app::{
+use abstract_sdk::AppInterface;
+use abstract_betting_app::{
     contract::{APP_ID, APP_VERSION},
     msg::{AppInstantiateMsg, ConfigResponse},
     *,
@@ -14,14 +16,14 @@ use cosmwasm_std::Addr;
 const ADMIN: &str = "admin";
 
 /// Set up the test environment with the contract installed
-fn setup() -> anyhow::Result<(AbstractAccount<Mock>, Abstract<Mock>, AppInterface<Mock>)> {
+fn setup() -> anyhow::Result<(Account<Mock>, Abstract<Mock>, AppInterface<Mock>)> {
     // Create a sender
     let sender = Addr::unchecked(ADMIN);
     // Create the mock
     let mock = Mock::new(&sender);
 
     // Construct the counter interface
-    let app = AppInterface::new(APP_ID, mock.clone());
+    let app = AppInterface::new(BET_APP_ID, mock.clone());
 
     // Deploy Abstract to the mock
     let abstr_deployment = Abstract::deploy_on(mock, sender.to_string())?;
@@ -29,14 +31,13 @@ fn setup() -> anyhow::Result<(AbstractAccount<Mock>, Abstract<Mock>, AppInterfac
     // Create a new account to install the app onto
     let account =
         abstr_deployment
-            .account_factory
             .create_default_account(GovernanceDetails::Monarchy {
                 monarch: ADMIN.to_string(),
             })?;
 
     // claim the namespace so app can be deployed
     abstr_deployment
-        .version_control
+        .registry
         .claim_namespace(AccountId::local(1), "my-namespace".to_string())?;
 
     app.deploy(APP_VERSION.parse()?)?;

@@ -6,32 +6,32 @@ use crate::msg::{
 };
 use crate::state::{AccountOdds, Config, Round, RoundId, RoundInfo, BETS, CONFIG, ODDS, ROUNDS};
 use abstract_core::objects::AccountId;
-use cosmwasm_std::{to_binary, Binary, Decimal, Deps, Env, Order, StdResult, Storage, Uint128};
+use cosmwasm_std::{to_json_binary, Binary, Decimal, Deps, Env, Order, StdResult, Storage, Uint128};
 use cw_storage_plus::Bound;
 
 pub fn query_handler(deps: Deps, _env: Env, _etf: &BetApp, msg: BetQueryMsg) -> BetResult<Binary> {
     match msg {
         BetQueryMsg::Config {} => {
             let Config { rake } = CONFIG.load(deps.storage)?;
-            to_binary(&ConfigResponse { rake: rake.share() })
+            to_json_binary(&ConfigResponse { rake: rake.share() })
         }
         BetQueryMsg::ListRounds { limit, start_after } => {
-            to_binary(&list_rounds(deps, limit, start_after)?)
+            to_json_binary(&list_rounds(deps, limit, start_after)?)
         }
         BetQueryMsg::Round { round_id } => {
             let round_res = Round::new(round_id).query(deps)?;
-            to_binary(&round_res)
+            to_json_binary(&round_res)
         }
         BetQueryMsg::Odds { round_id, team_id } => {
             let odds = ODDS.load(deps.storage, (round_id, team_id))?;
-            to_binary(&OddsResponse { round_id, odds })
+            to_json_binary(&OddsResponse { round_id, odds })
         }
-        BetQueryMsg::ListOdds { round_id } => to_binary(&list_odds(deps, round_id)?),
+        BetQueryMsg::ListOdds { round_id } => to_json_binary(&list_odds(deps, round_id)?),
         BetQueryMsg::Bets { round_id } => {
             let round = Round::new(round_id.clone());
             let bets = round.bets(deps.storage)?;
             let response = BetsResponse { round_id, bets };
-            to_binary(&response)
+            to_json_binary(&response)
         }
     }
     .map_err(Into::into)

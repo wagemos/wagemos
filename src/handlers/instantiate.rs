@@ -26,5 +26,5 @@ pub fn instantiate_handler(
     config.validate(deps.as_ref())?;
     CONFIG.save(deps.storage, &config)?;
 
-    Ok(app.tag_response(Response::new(), "instantiate"))
+    Ok(app.response("instantiate"))
 }

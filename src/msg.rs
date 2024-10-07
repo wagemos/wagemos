@@ -57,7 +57,7 @@ pub struct BetInstantiateMsg {
 /// Execute Msg
 #[cosmwasm_schema::cw_serde]
 #[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))]
-#[cfg_attr(feature = "interface", impl_into(ExecuteMsg))]
+// #[cfg_attr(feature = "interface", impl_into(ExecuteMsg))]
 pub enum BetExecuteMsg {
     /// Create a round of betting
     /// Admin only
@@ -77,7 +77,7 @@ pub enum BetExecuteMsg {
         to_remove: Vec<AccountId>,
     },
     /// Place a new bet for a round
-    #[cfg_attr(feature = "interface", payable)]
+    #[cfg_attr(feature = "interface", cw_orch(payable))]
     PlaceBet { bet: Bet, round_id: RoundId },
     /// Distribute winnings to the winners of the round
     DistributeWinnings { round_id: RoundId },
@@ -93,7 +93,7 @@ pub enum BetExecuteMsg {
 /// Query Msg
 #[cosmwasm_schema::cw_serde]
 #[cfg_attr(feature = "interface", derive(cw_orch::QueryFns))]
-#[cfg_attr(feature = "interface", impl_into(QueryMsg))]
+// #[cfg_attr(feature = "interface", impl_into(QueryMsg))]
 #[derive(QueryResponses)]
 pub enum BetQueryMsg {
     /// Returns [`RoundResponse`]
