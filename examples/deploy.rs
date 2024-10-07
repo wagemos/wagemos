@@ -1,49 +1,72 @@
-//! Deploys the module to the Abstract platform by uploading it and registering it on the version control contract.
-//!
-//! This should be used for mainnet/testnet deployments in combination with our front-end at https://app.abstract.money
-//!
-//! **Requires you to have an account and namespace registered**
-//!
-//! The mnemonic used to register the module must be the same as the owner of the account that claimed the namespace.
-//!
-//! Read our docs to learn how: https://docs.abstract.money/4_get_started/5_account_creation.html
-//!
-//! ## Example
-//!
-//! ```bash
-//! $ just deploy uni-6 osmo-test-5
-//! ```
-
-use abstract_interface::AppDeployer;
-use app::{
-    contract::{APP_ID, APP_VERSION},
-    AppInterface,
-};
+use abstract_app::abstract_interface::{AppDeployer, DeployStrategy};
+use abstract_client::{AbstractClient, AccountBuilder, Publisher, PublisherBuilder};
+use abstract_core::objects::gov_type::GovernanceDetails;
+use abstract_core::objects::namespace::Namespace;
+use abstract_core::registry::ExecuteMsgFns;
+use abstract_interface::{Abstract, AccountDetails, AccountI};
 use clap::Parser;
+use abstract_betting_app::{contract::interface::Bet, BET_APP_ID};
 use cw_orch::{
     anyhow,
-    daemon::ChainInfo,
     prelude::{networks::parse_network, DaemonBuilder},
     tokio::runtime::Runtime,
 };
+use cw_orch::daemon::{Daemon, TxSender};
+use cw_orch::environment::ChainInfo;
+use cw_orch::prelude::ContractInstance;
 use semver::Version;
+use abstract_betting_app::contract::{BetApp, CONTRACT_VERSION};
+use abstract_betting_app::msg::BetInstantiateMsg;
 
 fn deploy(networks: Vec<ChainInfo>) -> anyhow::Result<()> {
+    let version: Version = CONTRACT_VERSION.parse().unwrap();
+
     // run for each requested network
     for network in networks {
-        let version: Version = APP_VERSION.parse().unwrap();
         let rt = Runtime::new()?;
-        let chain = DaemonBuilder::default()
-            .handle(rt.handle())
-            .chain(network)
-            .build()?;
+        let chain = DaemonBuilder::new(network).handle(rt.handle()).build()?;
 
-        let app = AppInterface::new(APP_ID, chain);
-        app.deploy(version)?;
+        let abstr = AbstractClient::new(chain.clone())?;
+        let abs = Abstract::new(chain.clone());
 
-        // Create an account on our front-end to install the module!
-        // https://app.abstract.money
+        let acc = AccountI::create(&abs, AccountDetails {
+            name: "".to_string(),
+            description: None,
+            link: None,
+            namespace: Some("wagemos".to_string()),
+            install_modules: vec![],
+            account_id: None,
+        }, GovernanceDetails::Monarchy {
+            monarch: chain.sender().address().to_string()
+        }, &[])?;
+
+        panic!("Account: {:?}", acc.id());
+        // Caused by:
+        //     Error parsing into type u32: EOF while parsing a JSON value.
+        let wagemos_acc = abstr.account_builder().name("Wagemos test").build()?;
+
+
+        panic!("Wagemos account: {:?}", wagemos_acc.id());
+
+        abstr.registry().claim_namespace(wagemos_acc.id().unwrap(), "wagemos")?;
+
+
+        // let publisher = abstr.publisher_builder(Namespace::from_id(BET_APP_ID).unwrap()).build()?;
+
+        let bet = Bet::new(BET_APP_ID, chain.clone());
+
+        // publisher.publish_app::<Bet<Daemon>>()?;
+        bet.deploy(version.clone(), DeployStrategy::Force)?;
+
+        let acc = abstr.account_builder().namespace(Namespace::new("wagemos-test")?).install_on_sub_account(false).build()?;
+        let installed = acc.install_app::<Bet<Daemon>>(&BetInstantiateMsg {
+            rake: None
+        }, &[])?;
+
+        println!("Installed: {:?}", installed.address()?);
+
     }
+
     Ok(())
 }
 
@@ -59,6 +82,6 @@ fn main() {
     dotenv::dotenv().ok();
     env_logger::init();
     let args = Arguments::parse();
-    let networks = args.network_ids.iter().map(|n| parse_network(n)).collect();
+    let networks = args.network_ids.iter().map(|n| parse_network(n).unwrap()).collect();
     deploy(networks).unwrap();
 }

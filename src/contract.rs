@@ -24,4 +24,4 @@ const ETF_APP: BetApp = BetApp::new(BET_APP_ID, CONTRACT_VERSION, None)
 abstract_app::export_endpoints!(ETF_APP, BetApp);
 
 #[cfg(feature = "interface")]
-abstract_app::cw_orch_interface!(ETF_APP, BetApp, BetApp);
+abstract_app::cw_orch_interface!(ETF_APP, BetApp, Bet);
